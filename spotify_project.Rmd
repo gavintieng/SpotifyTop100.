@@ -1,0 +1,72 @@
+---
+title: "What makes a song hit top 100 on Spotify?"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Installing necessary packages:
+```{r}
+library(dplyr)
+library(ggplot2)
+library(CARS)
+```
+
+Summarize the data to see what variables we are working with:
+```{r}
+spotify_data <- read.csv("~/Desktop/projects/stats_projects/spotify_top100/top2018.csv")
+summary(spotify_data)
+```
+
+
+
+Determine which artists have more than 1 song on the top 100 songs list:
+
+```{r}
+artists <- spotify_data$artists
+n_occur <- data.frame(table(artists))
+top_artists <- n_occur[n_occur$Freq > 1,]
+
+ggplot(top_artists,aes(x=top_artists$artists,y=top_artists$Freq,label=top_artists$artists)) + geom_bar(stat="identity",fill="tomato2",width=0.5) + geom_text(aes(label=top_artists$Freq),color='white',hjust=2,size=3) +
+coord_flip() +
+labs(x='Number of Songs on Top 100 Chart',y='Artist',title='Artists with More than 1 Song on the Top 100 Chart') +
+theme(plot.title=element_text(face='bold',size=15),axis.title=element_text(face='bold',size=10))
+```
+
+Exploring the correlation between "danceability" with different variables of the top 100 songs:
+(insert spotify's definition of song factors)
+
+```{r}
+dance <- spotify_data$danceability
+energy <- spotify_data$energy
+loudness <- spotify_data$loudness
+speech <- spotify_data$speechiness
+acoustics <- spotify_data$acousticness
+liveliness <- spotify_data$liveness
+valence <- spotify_data$valence
+tempo <- spotify_data$tempo
+duration <- spotify_data$duration_ms
+```
+
+Build an initial model based on our intuition about "danceability":
+```{r}
+# Guess: danceability is correlated to liveliness, tempo, energy, and speechiness
+model01 <- lm(dance ~ liveliness + tempo + energy + speech)
+summary(model01)
+```
+```{r}
+pairs(dance ~ liveliness + tempo + energy + speech)
+```
+(analysis of AVplots + pair plots)
+
+It appears that liveliness, energy, and speech are weakly correlated to the "danceability" of a song. 
+
+```{r}
+model02 <- lm(dance~tempo+speech)
+summary(model02)
+```
+
